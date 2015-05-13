@@ -131,6 +131,7 @@ int raytracer_parallel(const char* filename, int processcount){
 	calculate_casting_bounds(scene->cam, bounds);
 
 	//TODO: spawn processes for each frame
+
 	//TODO: seek to the right position in the bitmap file and write frame
 
 	//TODO: wait for all child processes to finish before stopping time
@@ -156,13 +157,13 @@ int main(int argc, char** argv) {
 	//	printf("Error or not implemented.\n\n");
 	//}
 	
-	if (raytracer_loop("image-loop.bmp", processcount) != EXIT_SUCCESS){
-		printf("Error or not implemented.\n\n");
-	}
-
-	//if (raytracer_parallel("image-parallel.bmp", processcount) != EXIT_SUCCESS){
+	//if (raytracer_loop("image-loop.bmp", processcount) != EXIT_SUCCESS){
 	//	printf("Error or not implemented.\n\n");
 	//}
+
+	if (raytracer_parallel("image-parallel.bmp", processcount) != EXIT_SUCCESS){
+		printf("Error or not implemented.\n\n");
+	}
 
 
 	return 0;
