@@ -36,7 +36,7 @@ int raytracer_simple(const char* filename){
 		// open file
 		FILE *file = fopen(filename, "wb");
 		if (file) {
-			// write the headery
+			// write the header
 			write_bitmap_header(file, WIDTH, HEIGHT);
 
 			// write image to file on disk
@@ -72,47 +72,41 @@ int raytracer_loop(const char* filename, int processcount){
 	calculate_casting_bounds(scene->cam, bounds);
 
 	//TODO: split image calculation into segments
-	//create array with WIDTH/HEIGHT for each segment
-	int space = WIDTH / processcount;
+	//create array with x-offset for each segment
+	int space = HEIGHT / processcount;
 	int splitArray[processcount][2];
 
 	splitArray[0][0] = 0;
 	splitArray[0][1] = space;
 
-	int j;
-	for(j = 1; j < processcount; j++) {
-		splitArray[j][0] = splitArray[j-1][0] + space;
-		splitArray[j][1] = splitArray[j-1][1] + space;
+	int i;
+	for(i = 1; i < processcount; i++) {
+		splitArray[i][0] = splitArray[i-1][0] + space;
+		splitArray[i][1] = splitArray[i-1][1] + space;
 	}
 
 	//TODO: write segments to file
-		
+	FILE *file =  fopen(filename, "wb");
+	write_bitmap_header(file, WIDTH, HEIGHT);
+	fclose(file);
 
-	int k;
-	for(k = 0; k < processcount; k++) {
-		pix_t *img = (pix_t*) calloc(HEIGHT * WIDTH, sizeof(pix_t));
+	pix_t *img;
+
+	for(i = 0; i < processcount; i++) {
+		file =  fopen(filename, "ab");
+
+		img = (pix_t*) calloc(HEIGHT * WIDTH, sizeof(pix_t));
 		if (img){
 			// calculate the data for the image (do the actual raytrace)
-			raytrace(img, bounds, scene, splitArray[k][0], 0, splitArray[k][1], HEIGHT);
-
-			// open file
-			FILE *file = fopen(filename, "wb");
-			if (file) {
-				// write the header
-				write_bitmap_header(file, WIDTH, HEIGHT);
-
-				// write image to file on disk
-				fwrite(img, 3, WIDTH * HEIGHT, file);
-
-				// free buffer
-				free(img);
-	
-				// close file
-				fclose(file);
-			}
+			raytrace(img, bounds, scene, 0, splitArray[i][0], WIDTH, splitArray[i][1]);
+			
+			fwrite(img, 3, WIDTH * space, file);
+			free(img);
+			fclose(file);
+			
 		}
 	}
-
+	
 	delete_scene(scene);
 
 	// print the measured time
@@ -145,8 +139,8 @@ int raytracer_parallel(const char* filename, int processcount){
 	end = current_time_millis();
 	printf("Render time: %.3fs\n", (double) (end - start) / 1000);
 	
-	//return EXIT_SUCCESS;
-	return EXIT_FAILURE;
+	return EXIT_SUCCESS;
+	//return EXIT_FAILURE;
 }
 
 int main(int argc, char** argv) {
@@ -158,17 +152,17 @@ int main(int argc, char** argv) {
 	
 	unsigned int processcount = strtol(argv[1], NULL, 10);
 
-	if (raytracer_simple("image-simple.bmp") != EXIT_SUCCESS){
-		printf("Error or not implemented.\n\n");
-	}
+	//if (raytracer_simple("image-simple.bmp") != EXIT_SUCCESS){
+	//	printf("Error or not implemented.\n\n");
+	//}
 	
 	if (raytracer_loop("image-loop.bmp", processcount) != EXIT_SUCCESS){
 		printf("Error or not implemented.\n\n");
 	}
 
-	if (raytracer_parallel("image-parallel.bmp", processcount) != EXIT_SUCCESS){
-		printf("Error or not implemented.\n\n");
-	}
+	//if (raytracer_parallel("image-parallel.bmp", processcount) != EXIT_SUCCESS){
+	//	printf("Error or not implemented.\n\n");
+	//}
 
 
 	return 0;
