@@ -240,17 +240,17 @@ int main(int argc, char** argv) {
 	
 	unsigned int processcount = strtol(argv[1], NULL, 10);
 
-	//if (raytracer_simple("image-simple.bmp") != EXIT_SUCCESS){
-	//	printf("Error or not implemented.\n\n");
-	//}
+	if (raytracer_simple("image-simple.bmp") != EXIT_SUCCESS){
+		printf("Error or not implemented.\n\n");
+	}
 	
 	//if (raytracer_loop("image-loop.bmp", processcount) != EXIT_SUCCESS){
 	//	printf("Error or not implemented.\n\n");
 	//}
 
-	if (raytracer_parallel("image-parallel.bmp", processcount) != EXIT_SUCCESS){
-		printf("Error or not implemented.\n\n");
-	}
+	//if (raytracer_parallel("image-parallel.bmp", processcount) != EXIT_SUCCESS){
+	//	printf("Error or not implemented.\n\n");
+	//}
 
 
 	return 0;
