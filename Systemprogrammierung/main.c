@@ -182,27 +182,27 @@ int raytracer_parallel(const char* filename, int processcount){
 		// open file
 		FILE *file = fopen(filename, "ab");
 		if (file) {
-			/*
-			int size = 26;
 			
+			int size = 26;
+			 
 			if (processcount > 1) {
 				while((counter*(1440000/(processcount)))+26 != size) {
 					fseek(file, 0, SEEK_END); // seek to end of file
 					size = ftell(file); // get current file pointer
 					fseek(file, 0, SEEK_SET); // seek back to beginning of file
 				}
-			}*/
+			}
 
 			// write image to file on disk
 			fwrite(img, 3, WIDTH * space, file);
 
-			/*
+			
 			fseek(file, 0, SEEK_END); // seek to end of file
 			size = ftell(file); // get current file pointer
 			fseek(file, 0, SEEK_SET); // seek back to beginning of
 
 			printf("%d\n", size);
-			*/
+			
 
 			// free buffer
 			free(img);
@@ -240,17 +240,17 @@ int main(int argc, char** argv) {
 	
 	unsigned int processcount = strtol(argv[1], NULL, 10);
 
-	if (raytracer_simple("image-simple.bmp") != EXIT_SUCCESS){
-		printf("Error or not implemented.\n\n");
-	}
+	//if (raytracer_simple("image-simple.bmp") != EXIT_SUCCESS){
+	//	printf("Error or not implemented.\n\n");
+	//}
 	
 	//if (raytracer_loop("image-loop.bmp", processcount) != EXIT_SUCCESS){
 	//	printf("Error or not implemented.\n\n");
 	//}
 
-	//if (raytracer_parallel("image-parallel.bmp", processcount) != EXIT_SUCCESS){
-	//	printf("Error or not implemented.\n\n");
-	//}
+	if (raytracer_parallel("image-parallel.bmp", processcount) != EXIT_SUCCESS){
+		printf("Error or not implemented.\n\n");
+	}
 
 
 	return 0;
