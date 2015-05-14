@@ -16,39 +16,39 @@ int raytracer_simple(const char* filename){
 	printf("%s      :  ", filename);
 	unsigned long start, end;
 
-	// init time measurement
+	//init time measurement
 	start = current_time_millis();
 
-	// init raytracer
+	//init raytracer
 	vec_t bounds[4];
 	scene_t *scene = create_scene();
 	calculate_casting_bounds(scene->cam, bounds);
 
-	// Allocate buffer for picture data
+	//Allocate buffer for picture data
 	pix_t *img = (pix_t*) calloc(HEIGHT * WIDTH, sizeof(pix_t));
 	if (img){
 
-		// calculate the data for the image (do the actual raytrace)
+		//calculate the data for the image (do the actual raytrace)
 		raytrace(img, bounds, scene, 0, 0, WIDTH, HEIGHT);
 
 		delete_scene(scene);
 
-		// open file
+		//open file
 		FILE *file = fopen(filename, "wb");
 		if (file) {
-			// write the header
+			//write the header
 			write_bitmap_header(file, WIDTH, HEIGHT);
 
-			// write image to file on disk
+			//write image to file on disk
 			fwrite(img, 3, WIDTH * HEIGHT, file);
 
-			// free buffer
+			//free buffer
 			free(img);
 			
-			// close file
+			//close file
 			fclose(file);
 			
-			// print the measured time
+			//print the measured time
 			end = current_time_millis();
 			printf("Render time: %.3fs\n", (double) (end - start) / 1000);
 			
@@ -63,16 +63,16 @@ int raytracer_loop(const char* filename, int processcount){
 	printf("%s (%i)    :  ", filename, processcount);
 	unsigned long start, end;
 
-	// init time measurement
+	//init time measurement
 	start = current_time_millis();
 
-	// init raytracer
+	//init raytracer
 	vec_t bounds[4];
 	scene_t *scene = create_scene();
 	calculate_casting_bounds(scene->cam, bounds);
 
 	//TODO: split image calculation into segments
-	//create array with x-offset for each segment
+	//create array with y-offset for each segment
 	int space = HEIGHT / processcount;
 	int splitArray[processcount][2];
 
@@ -87,6 +87,7 @@ int raytracer_loop(const char* filename, int processcount){
 
 	//TODO: write segments to file
 	FILE *file =  fopen(filename, "wb");
+	//write header
 	write_bitmap_header(file, WIDTH, HEIGHT);
 	fclose(file);
 
@@ -97,9 +98,9 @@ int raytracer_loop(const char* filename, int processcount){
 
 		img = (pix_t*) calloc(HEIGHT * WIDTH, sizeof(pix_t));
 		if (img){
-			// calculate the data for the image (do the actual raytrace)
+			//calculate the data for the image (do the actual raytrace)
 			raytrace(img, bounds, scene, 0, splitArray[i][0], WIDTH, splitArray[i][1]);
-			
+			//write into file
 			fwrite(img, 3, WIDTH * space, file);
 			free(img);
 			fclose(file);
@@ -109,7 +110,7 @@ int raytracer_loop(const char* filename, int processcount){
 	
 	delete_scene(scene);
 
-	// print the measured time
+	//print the measured time
 	end = current_time_millis();
 	printf("Render time: %.3fs\n", (double) (end - start) / 1000);
 	
@@ -117,20 +118,22 @@ int raytracer_loop(const char* filename, int processcount){
 	//return EXIT_FAILURE;
 }
 
-int raytracer_parallel(const char* filename, int processcount){
-
-	printf("%s (%i):  ", filename, processcount);
+int raytracer_parallel(const char* filename, int processcount){	
+	//moved printf to the end of the function
+	//printf("%s (%i):  ", filename, processcount);
 	unsigned long start, end;
 	
-	// init time measurement
+	//init time measurement
 	start = current_time_millis();
 
-	// init raytracer
+	//init raytracer
 	vec_t bounds[4];
 	scene_t *scene = create_scene();
 	calculate_casting_bounds(scene->cam, bounds);
 
+
 	//TODO: spawn processes for each frame
+	//create array with y-offset for each segment
 	int space = HEIGHT / processcount;
 	int splitArray[processcount][2];
 
@@ -144,13 +147,14 @@ int raytracer_parallel(const char* filename, int processcount){
 	}
 
 	FILE *file = fopen(filename, "wb");
+	//write header
 	write_bitmap_header(file, WIDTH, HEIGHT);
 	fclose(file);
 
 	pid_t pid;
 	int counter = 0;
 
-
+	//spawn child-process
 	for(i = 0; i < processcount-1; i++) {
 		pid = fork();
 		
@@ -170,59 +174,53 @@ int raytracer_parallel(const char* filename, int processcount){
 	}
 
 	//TODO: seek to the right position in the bitmap file and write frame
-	// Allocate buffer for picture data
+	//Allocate buffer for picture data
 	pix_t *img = (pix_t*) calloc(HEIGHT * WIDTH, sizeof(pix_t));
 	if (img){
 
-		// calculate the data for the image (do the actual raytrace)
+		//calculate the data for the image (do the actual raytrace)
 		raytrace(img, bounds, scene, 0, splitArray[counter][0], WIDTH, splitArray[counter][1]);
 
 		delete_scene(scene);
 
-		// open file
+		//open file
 		FILE *file = fopen(filename, "ab");
 		if (file) {
-			
+			//wait till the child before writes into the file so for example: child2 writes before child1 and the picture is in wrong order.
 			int size = 26;
-			 
 			if (processcount > 1) {
 				while((counter*(1440000/(processcount)))+26 != size) {
-					fseek(file, 0, SEEK_END); // seek to end of file
-					size = ftell(file); // get current file pointer
-					fseek(file, 0, SEEK_SET); // seek back to beginning of file
+					fseek(file, 0, SEEK_END); //seek to end of file
+					size = ftell(file); //get current file pointer
+					fseek(file, 0, SEEK_SET); //seek back to beginning of file
 				}
 			}
 
-			// write image to file on disk
+			//write image to file on disk
 			fwrite(img, 3, WIDTH * space, file);
 
-			
-			fseek(file, 0, SEEK_END); // seek to end of file
-			size = ftell(file); // get current file pointer
-			fseek(file, 0, SEEK_SET); // seek back to beginning of
-
-			printf("%d\n", size);
-			
-
-			// free buffer
+			//free buffer
 			free(img);
 		
-			// close file
+			//close file
 			fclose(file);
 		}
 	}
 
-	//TODO: wait for all child processes to finish before stopping time
+	//if child exit
 	if (counter != processcount-1) {
 		exit(0);
+	} else {
+		printf("%s (%i):  ", "image-parallel.bmp", processcount);
 	}
 
-
-	// print the measured time
+	//TODO: wait for all child processes to finish before stopping time
 	int status = 0;
 	pid_t wpid;
+	
 	while ((wpid = wait(&status)) > 0);
 
+	//print the measured time
 	end = current_time_millis();
 	printf("Render time: %.3fs\n", (double) (end - start) / 1000);
 	
