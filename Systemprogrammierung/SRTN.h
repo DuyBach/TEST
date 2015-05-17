@@ -17,9 +17,6 @@
 #ifndef _SRTN_H
 #define _SRTN_H
 
-// creating Queue
-struct Queue *que;
-
 /*
  * Initialize data structures if needed.
  *

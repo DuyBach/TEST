@@ -3,5 +3,5 @@
 *.d
 *.c~
 *.h~
-gitignore~
+.gitignore~
 scheduler

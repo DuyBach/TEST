@@ -9,7 +9,6 @@
 typedef struct q_elem{
 	int id;
 	int length;
-	int work;
 	struct q_elem *next;
 } q_elem;
 
@@ -33,6 +32,8 @@ int init_LCFS()
 
 	que->actual = NULL;
 	que->root = NULL;
+
+	switch_task(IDLE);
 
 	return 1;
 }
@@ -58,7 +59,6 @@ void arrive_LCFS(int id, int length)
 	q_elem *new = (q_elem*)malloc(sizeof(q_elem));
 	new->id = id;
 	new->length = length;
-	new->work = length;
 
 	if (que->actual == NULL) {
 		que->actual = new;
@@ -77,13 +77,12 @@ void tick_LCFS()
 void finish_LCFS()
 {
 	// TODO
+	free(que->actual);
 	if (que->root == NULL){
-		free(que->actual);
 		que->actual = NULL;
 
 		switch_task(IDLE);
 	} else {
-		free(que->actual);
 		que->actual = que->root;
 		que->root = que->root->next;
 
