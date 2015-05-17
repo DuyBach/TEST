@@ -1,6 +1,5 @@
-# Ignore everything
-*
+# Compiler Files
+*.o
+*.d
+scheduler
 
-# But not these files...
-!.gitignore
-!main.c
