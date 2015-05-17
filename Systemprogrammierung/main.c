@@ -73,17 +73,20 @@ int raytracer_loop(const char* filename, int processcount){
 
 	//TODO: split image calculation into segments
 	//create array with y-offset for each segment
-	int space = HEIGHT / processcount;
+	div_t space;
+	space = div(HEIGHT, processcount);
 	int splitArray[processcount][2];
 
 	splitArray[0][0] = 0;
-	splitArray[0][1] = space;
+	splitArray[0][1] = space.quot;
 
 	int i;
 	for(i = 1; i < processcount; i++) {
-		splitArray[i][0] = splitArray[i-1][0] + space;
-		splitArray[i][1] = splitArray[i-1][1] + space;
+		splitArray[i][0] = splitArray[i-1][0] + space.quot;
+		splitArray[i][1] = splitArray[i-1][1] + space.quot;
 	}
+
+	splitArray[processcount][1] = HEIGHT;
 
 	//TODO: write segments to file
 	FILE *file =  fopen(filename, "wb");
@@ -101,7 +104,12 @@ int raytracer_loop(const char* filename, int processcount){
 			//calculate the data for the image (do the actual raytrace)
 			raytrace(img, bounds, scene, 0, splitArray[i][0], WIDTH, splitArray[i][1]);
 			//write into file
-			fwrite(img, 3, WIDTH * space, file);
+			if(i != processcount-1) {
+				fwrite(img, 3, WIDTH * space.quot, file);
+			} else {
+				//if last one, write also the last frame into the file
+				fwrite(img, 3, (WIDTH * space.quot) + ((WIDTH*HEIGHT)-(processcount*(WIDTH*space.quot))), file);
+			}			
 			free(img);
 			fclose(file);
 			
@@ -134,17 +142,21 @@ int raytracer_parallel(const char* filename, int processcount){
 
 	//TODO: spawn processes for each frame
 	//create array with y-offset for each segment
-	int space = HEIGHT / processcount;
+
+	div_t space;
+	space = div(HEIGHT, processcount);
 	int splitArray[processcount][2];
 
 	splitArray[0][0] = 0;
-	splitArray[0][1] = space;
+	splitArray[0][1] = space.quot;
 
 	int i;
 	for(i = 1; i < processcount; i++) {
-		splitArray[i][0] = splitArray[i-1][0] + space;
-		splitArray[i][1] = splitArray[i-1][1] + space;
+		splitArray[i][0] = splitArray[i-1][0] + space.quot;
+		splitArray[i][1] = splitArray[i-1][1] + space.quot;
 	}
+
+	splitArray[processcount][1] = HEIGHT;
 
 	FILE *file = fopen(filename, "wb");
 	//write header
@@ -185,11 +197,14 @@ int raytracer_parallel(const char* filename, int processcount){
 
 		//open file
 		FILE *file = fopen(filename, "ab");
+
+		int limit = counter*(3*WIDTH*space.quot) + 26;
+
 		if (file) {
 			//wait till the child before writes into the file so for example: child2 writes before child1 and the picture is in wrong order.
 			int size = 26;
 			if (processcount > 1) {
-				while((counter*(1440000/(processcount)))+26 != size) {
+				while(limit != size) {
 					fseek(file, 0, SEEK_END); //seek to end of file
 					size = ftell(file); //get current file pointer
 					fseek(file, 0, SEEK_SET); //seek back to beginning of file
@@ -197,7 +212,18 @@ int raytracer_parallel(const char* filename, int processcount){
 			}
 
 			//write image to file on disk
-			fwrite(img, 3, WIDTH * space, file);
+			if (counter != processcount-1) {
+				fwrite(img, 3, WIDTH * space.quot, file);
+			} else {
+				//if last one, write also the last frame into the file
+				fwrite(img, 3, (WIDTH * space.quot) + ((WIDTH*HEIGHT)-(processcount*(WIDTH*space.quot))), file);
+			}
+
+			fseek(file, 0, SEEK_END); //seek to end of file
+			size = ftell(file); //get current file pointer
+			fseek(file, 0, SEEK_SET); //seek back to beginning of file
+
+			printf("%d\n", size);
 
 			//free buffer
 			free(img);
