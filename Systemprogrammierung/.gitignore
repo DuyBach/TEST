@@ -1,5 +1,7 @@
 # Compiler Files
 *.o
 *.d
+*.c~
+*.h~
+gitignore~
 scheduler
-
