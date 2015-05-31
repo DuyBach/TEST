@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 
 // struct for queue
@@ -20,6 +21,7 @@ struct Queue{
 	struct Queue *next;
 };
 
+// list of queues
 struct QueueList{
 	struct Queue *root;
 	q_elem *actual;
@@ -31,6 +33,7 @@ struct QueueList{
 struct QueueList *queList;
 
 
+// extra function to add a queue to the queList
 void add_que()
 {
 	struct Queue *que = (struct Queue*)malloc(sizeof(struct Queue));
@@ -51,10 +54,9 @@ void add_que()
 	switch_task(IDLE);
 }
 
-//FIFO when q_elem->time_step == num_queues*time_step
 int init_MLF(int time_step, int num_queues)
 {
-	// TODO
+	// create queList with (num_queues) queues
 	queList = (struct QueueList*)malloc(sizeof(struct QueueList));
 	if (queList == NULL) {
 		printf("FAILED TO CREATE QUEUE\n");
@@ -76,11 +78,7 @@ int init_MLF(int time_step, int num_queues)
 
 void free_MLF()
 {
-	// TODO
-	// zuerst queue elemete freen
-	// danach queue freen
-	// danach queuelist freen
-
+	// free queList
 	q_elem *tmpEle, *toDelete;
 	struct Queue *queDelete;
 	struct Queue *current = queList->root;
@@ -107,7 +105,8 @@ void free_MLF()
 
 void arrive_MLF(int id, int length)
 {
-	// TODO
+	// if new q_elem incoming put in first queue
+	// if cpu in IDLE-Mode fill with the new q_elem
 	q_elem *new = (q_elem*)malloc(sizeof(q_elem));
 	new->id = id;
 	new->length = length;
@@ -142,7 +141,7 @@ void arrive_MLF(int id, int length)
 
 void tick_MLF()
 {
-	// TODO
+	// if cpu in IDLE-Mode stay IDLE (arrive_MLF will put q_elem in cpu if cpu is in IDLE-Mode)
 	if(queList->actual == NULL) {
 		switch_task(IDLE);
 
@@ -152,6 +151,8 @@ void tick_MLF()
 	queList->actual->time_left--;
 	queList->actual->length--;
 
+	// if q_elem done remove and search for new q_elem for the cpu
+	// else put actual q_elem in a higher que and search for new q_elem for cpu
 	if (queList->actual->length == 0) {
 		free(queList->actual);
 
@@ -178,7 +179,7 @@ void tick_MLF()
 		queList->actual->nr++;
 
 		if (queList->actual->nr == queList->num_queues) {
-			queList->actual->time_left = 255;
+			queList->actual->time_left = INT_MAX;
 		} else {
 			queList->actual->time_left = queList->actual->nr * queList->time_step;
 		}

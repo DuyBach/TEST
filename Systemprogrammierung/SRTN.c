@@ -23,7 +23,7 @@ struct Queue *que;
 
 int init_SRTN()
 {
-	// TODO
+	// creating queue
 	que = (struct Queue*)malloc(sizeof(struct Queue));
 	if (que == NULL) {
 		printf("FAILED TO CREATE QUEUE\n");
@@ -40,7 +40,7 @@ int init_SRTN()
 
 void free_SRTN()
 {
-	// TODO
+	// free queue
 	free(que->actual);
 	q_elem *current, *next;
 
@@ -55,12 +55,14 @@ void free_SRTN()
 
 void arrive_SRTN(int id, int length)
 {
-	// TODO
+	// create new q_elem
 	q_elem *new = (q_elem*)malloc(sizeof(q_elem));
 	new->id = id;
 	new->length = length;
 	new->next = NULL;
 
+	// put new in cpu if the length is shorter than the actual q_elem in cpu
+	// if not put in cpu put in the queue with the shortest job order
 	if (que->actual == NULL) {
 		que->actual = new;
 		switch_task(que->actual->id);
@@ -102,7 +104,9 @@ void arrive_SRTN(int id, int length)
 
 void tick_SRTN()
 {
-	// TODO
+	// remove 1 length from actual q_elem in cpu
+	// if task done switch to a new q_elem or switch to IDLE-Mode
+	// if cpu is in IDLE try to put the head of the queue in the cpu or stay IDLE-Mode
 	if (que->actual != NULL && que->actual->length != 0) {
 		que->actual->length--;
 

@@ -23,7 +23,7 @@ struct Queue *que;
 
 int init_LCFS()
 {
-	// TODO
+	// creating queue
 	que = (struct Queue*)malloc(sizeof(struct Queue));
 	if (que == NULL) {
 		printf("FAILED TO CREATE QUEUE\n");
@@ -40,7 +40,7 @@ int init_LCFS()
 
 void free_LCFS()
 {
-	// TODO
+	// free queue
 	free(que->actual);
 	q_elem *current, *next;
 
@@ -55,11 +55,13 @@ void free_LCFS()
 
 void arrive_LCFS(int id, int length)
 {
-	// TODO
+	// create new q_elem
 	q_elem *new = (q_elem*)malloc(sizeof(q_elem));
 	new->id = id;
 	new->length = length;
 
+	// put new in cpu or in queue
+	// if not put in cpu put in the head of the queue 
 	if (que->actual == NULL) {
 		que->actual = new;
 		switch_task(que->actual->id);
@@ -76,7 +78,7 @@ void tick_LCFS()
 
 void finish_LCFS()
 {
-	// TODO
+	// free q_elem in cpu and put new q_elem in cpu
 	free(que->actual);
 	if (que->root == NULL){
 		que->actual = NULL;

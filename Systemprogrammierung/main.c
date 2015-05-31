@@ -18,8 +18,12 @@ int main()
 		arrive_MLF(2, 10);
 		tick_MLF();
 		tick_MLF();
+		arrive_MLF(100, 5);
 		tick_MLF();
-		printf("%i\n", running_task); // 2
+		tick_MLF();
+		tick_MLF();
+		tick_MLF();
+		printf("%i\n", running_task); // 5
 	}
 	else
 	{
