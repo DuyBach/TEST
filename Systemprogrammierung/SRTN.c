@@ -59,6 +59,7 @@ void arrive_SRTN(int id, int length)
 	q_elem *new = (q_elem*)malloc(sizeof(q_elem));
 	new->id = id;
 	new->length = length;
+	new->next = NULL;
 
 	if (que->actual == NULL) {
 		que->actual = new;
@@ -74,7 +75,15 @@ void arrive_SRTN(int id, int length)
 		que->root = new;
 	} else {
 		q_elem *before, *current;
-		current = que->root;		
+		current = que->root;	
+
+		if (current->length > new->length) {
+			new->next = current;
+			que->root = new;
+
+			return;
+		}
+
 		while(current->next != NULL) {
 			before = current;
 			current = current->next;
@@ -94,7 +103,7 @@ void arrive_SRTN(int id, int length)
 void tick_SRTN()
 {
 	// TODO
-	if (que->actual != NULL && que->actual->id != 0) {
+	if (que->actual != NULL && que->actual->length != 0) {
 		que->actual->length--;
 
 		if (que->actual->length == 0) {
