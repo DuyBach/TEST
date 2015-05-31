@@ -83,6 +83,8 @@ void free_MLF()
 	struct Queue *queDelete;
 	struct Queue *current = queList->root;
 
+	free(queList->actual);
+
 	int i;
 	for (i = 0; i < queList->num_queues; i++) {
 		// delete queue elements		

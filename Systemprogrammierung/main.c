@@ -24,6 +24,7 @@ int main()
 		tick_MLF();
 		tick_MLF();
 		printf("%i\n", running_task); // 5
+		free_MLF();
 	}
 	else
 	{
